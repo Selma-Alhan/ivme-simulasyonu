@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sabit İvmeli Hareket Simülasyonu | Lise Fizik</title>
+    <!-- Google Fonts for crisp classroom projection readability -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- KaTeX for Physics Equation Typesetting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation Header -->
+        <header class="main-header">
+            <div class="brand">
+                <div class="brand-icon">⚡</div>
+                <div>
+                    <h1>Sabit İvmeli Hareket Simülasyonu</h1>
+                    <p class="subtitle">Lise Fizik Laboratuvarı • Etkileşimli ve Görsel Deney Alanı</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <span class="badge projection-badge">📺 Projeksiyon Uyumlu</span>
+                <button id="themeToggleBtn" class="btn btn-secondary btn-icon" title="Temayı Değiştir">
+                    <span id="themeIcon">🌙</span> <span class="btn-text">Karanlık / Aydınlık</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace Grid -->
+        <main class="workspace-grid">
+
+            <!-- Left Controls & Parameters Sidebar -->
+            <aside class="sidebar-panel">
+                <div class="card control-card">
+                    <div class="card-header">
+                        <h2>⚙️ Hareket Parametreleri</h2>
+                    </div>
+                    
+                    <form id="controlForm" onsubmit="return false;">
+                        <!-- Initial Velocity v0 -->
+                        <div class="control-group">
+                            <div class="control-label-row">
+                                <label for="v0Range">Başlangıç Hızı ($v_0$):</label>
+                                <div class="value-display velocity-text"><span id="v0Val">0</span> m/s</div>
+                            </div>
+                            <div class="input-range-wrapper">
+                                <input type="range" id="v0Range" min="-20" max="20" step="0.5" value="0">
+                                <input type="number" id="v0Number" min="-20" max="20" step="0.5" value="0" class="num-input">
+                            </div>
+                            <div class="range-marks">
+                                <span>-20 m/s</span>
+                                <span>0</span>
+                                <span>+20 m/s</span>
+                            </div>
+                        </div>
+
+                        <!-- Acceleration a -->
+                        <div class="control-group">
+                            <div class="control-label-row">
+                                <label for="aRange">İvme ($a$):</label>
+                                <div class="value-display accel-text"><span id="aVal">2</span> m/s²</div>
+                            </div>
+                            <div class="input-range-wrapper">
+                                <input type="range" id="aRange" min="-10" max="10" step="0.5" value="2">
+                                <input type="number" id="aNumber" min="-10" max="10" step="0.5" value="2" class="num-input">
+                            </div>
+                            <div class="range-marks">
+                                <span>-10 m/s²</span>
+                                <span>0</span>
+                                <span>+10 m/s²</span>
+                            </div>
+                        </div>
+
+                        <!-- Duration t_max -->
+                        <div class="control-group">
+                            <div class="control-label-row">
+                                <label for="tRange">Toplam Süre ($t_{\text{max}}$):</label>
+                                <div class="value-display time-text"><span id="tVal">10</span> saniye</div>
+                            </div>
+                            <div class="input-range-wrapper">
+                                <input type="range" id="tRange" min="1" max="20" step="1" value="10">
+                                <input type="number" id="tNumber" min="1" max="20" step="1" value="10" class="num-input">
+                            </div>
+                            <div class="range-marks">
+                                <span>1s</span>
+                                <span>10s</span>
+                                <span>20s</span>
+                            </div>
+                        </div>
+
+                        <!-- Speed multiplier -->
+                        <div class="control-group">
+                            <label for="speedSelect">Simülasyon Hızı:</label>
+                            <div class="speed-buttons" id="speedGroup">
+                                <button type="button" class="btn-speed" data-speed="0.25">0.25x</button>
+                                <button type="button" class="btn-speed" data-speed="0.5">0.5x</button>
+                                <button type="button" class="btn-speed active" data-speed="1.0">1.0x (Normal)</button>
+                                <button type="button" class="btn-speed" data-speed="2.0">2.0x</button>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <button id="startBtn" class="btn btn-success btn-lg">
+                                <span>▶</span> Başlat
+                            </button>
+                            <button id="pauseBtn" class="btn btn-warning btn-lg" disabled>
+                                <span>⏸</span> Duraklat
+                            </button>
+                            <button id="resetBtn" class="btn btn-danger btn-lg">
+                                <span>🔄</span> Sıfırla
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Scenario Presets -->
+                <div class="card scenario-card">
+                    <div class="card-header">
+                        <h2>🎯 Örnek Senaryolar</h2>
+                    </div>
+                    <div class="scenario-buttons">
+                        <button class="btn btn-outline scenario-btn" data-v0="0" data-a="4" data-t="10">
+                            <span class="scen-icon">🚀</span>
+                            <div class="scen-info">
+                                <strong>Pozitif Yönde Hızlanan</strong>
+                                <small>v₀ = 0 m/s, a = +4 m/s²</small>
+                            </div>
+                        </button>
+                        <button class="btn btn-outline scenario-btn" data-v0="16" data-a="-4" data-t="10">
+                            <span class="scen-icon">🛑</span>
+                            <div class="scen-info">
+                                <strong>Pozitif Yönde Yavaşlayan</strong>
+                                <small>v₀ = +16 m/s, a = -4 m/s²</small>
+                            </div>
+                        </button>
+                        <button class="btn btn-outline scenario-btn" data-v0="12" data-a="-3" data-t="10">
+                            <span class="scen-icon">🔄</span>
+                            <div class="scen-info">
+                                <strong>Yön Değiştiren Hareket</strong>
+                                <small>v₀ = +12 m/s, a = -3 m/s²</small>
+                            </div>
+                        </button>
+                        <button class="btn btn-outline scenario-btn" data-v0="10" data-a="0" data-t="10">
+                            <span class="scen-icon">🚗</span>
+                            <div class="scen-info">
+                                <strong>Sabit Hızlı Hareket</strong>
+                                <small>v₀ = +10 m/s, a = 0 m/s²</small>
+                            </div>
+                        </button>
+                        <button class="btn btn-outline scenario-btn" data-v0="0" data-a="-4" data-t="10">
+                            <span class="scen-icon">⏪</span>
+                            <div class="scen-info">
+                                <strong>Negatif Yönde Hızlanan</strong>
+                                <small>v₀ = 0 m/s, a = -4 m/s²</small>
+                            </div>
+                        </button>
+                        <button class="btn btn-outline scenario-btn" data-v0="-12" data-a="3" data-t="10">
+                            <span class="scen-icon">🔄⏪</span>
+                            <div class="scen-info">
+                                <strong>Negatif Yönden Yön Değiştiren</strong>
+                                <small>v₀ = -12 m/s, a = +3 m/s²</small>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center/Right Main Content Area -->
+            <section class="main-content">
+                
+                <!-- Real-time Animation Canvas Container -->
+                <div class="card canvas-card">
+                    <div class="card-header canvas-header">
+                        <h2>🚘 Real-Time Hareket Sahnesi</h2>
+                        <div class="vector-legend">
+                            <span class="legend-item legend-velocity">
+                                <span class="legend-arrow">➔</span> Hız Vektörü ($\vec{v}$)
+                            </span>
+                            <span class="legend-item legend-accel">
+                                <span class="legend-arrow">➔</span> İvme Vektörü ($\vec{a}$)
+                            </span>
+                            <span class="legend-item legend-turn">
+                                <span class="legend-dot">📍</span> Durma/Yön Değiştirme
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Canvas Viewport -->
+                    <div class="canvas-viewport">
+                        <canvas id="simCanvas" width="900" height="240"></canvas>
+                    </div>
+
+                    <!-- Telemetry HUD Bar -->
+                    <div class="telemetry-bar">
+                        <div class="tele-item">
+                            <span class="tele-label">ZAMAN (t)</span>
+                            <span class="tele-val time-color" id="hudTime">0.00 <small>s</small></span>
+                        </div>
+                        <div class="tele-item">
+                            <span class="tele-label">KONUM (x)</span>
+                            <span class="tele-val pos-color" id="hudPos">0.00 <small>m</small></span>
+                        </div>
+                        <div class="tele-item">
+                            <span class="tele-label">HIZ (v)</span>
+                            <span class="tele-val vel-color" id="hudVel">0.00 <small>m/s</small></span>
+                        </div>
+                        <div class="tele-item">
+                            <span class="tele-label">İVME (a)</span>
+                            <span class="tele-val accel-color" id="hudAccel">0.00 <small>m/s²</small></span>
+                        </div>
+                        <div class="tele-item tele-status">
+                            <span class="tele-label">HAREKET DURUMU</span>
+                            <span class="tele-badge" id="hudStatus">Durgun</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Math Equations & Explanations Card -->
+                <div class="card math-card">
+                    <div class="card-header">
+                        <h2>📐 Matematiksel Denklemler ve Anlık Hesaplama</h2>
+                    </div>
+                    <div class="math-grid">
+                        <div class="math-box">
+                            <div class="math-title">Konum Denklemi</div>
+                            <div class="math-formula">\( x(t) = x_0 + v_0 \cdot t + \frac{1}{2} a \cdot t^2 \)</div>
+                            <div class="math-substitute" id="eqPosSub">
+                                \( x(t) = 0 + (0.0) \cdot t + \frac{1}{2}(2.0) \cdot t^2 \)
+                            </div>
+                            <div class="math-result" id="eqPosRes">
+                                \( x(0.00\text{s}) = 0.00 \text{ m} \)
+                            </div>
+                        </div>
+
+                        <div class="math-box">
+                            <div class="math-title">Hız Denklemi</div>
+                            <div class="math-formula">\( v(t) = v_0 + a \cdot t \)</div>
+                            <div class="math-substitute" id="eqVelSub">
+                                \( v(t) = (0.0) + (2.0) \cdot t \)
+                            </div>
+                            <div class="math-result" id="eqVelRes">
+                                \( v(0.00\text{s}) = 0.00 \text{ m/s} \)
+                            </div>
+                        </div>
+
+                        <div class="math-box math-box-highlights">
+                            <div class="math-title">Fiziksel Özellikler</div>
+                            <ul class="physics-list">
+                                <li id="phTrend">💡 Hız ve İvme aynı işaretli ise cisim <strong>hızlanır</strong>.</li>
+                                <li id="phStop">⏱ Durma / Yön Değiştirme Anı ($v=0$): <strong id="stopTimeText">Yön değişmiyor</strong></li>
+                                <li id="phDisp">📏 Toplam Yer Değiştirme ($\Delta x$): <strong id="totalDispText">0.00 m</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Synchronous Graphs Grid -->
+                <div class="card graphs-card">
+                    <div class="card-header graphs-header">
+                        <h2>📊 Eş Zamanlı Fizik Grafikleri</h2>
+                        <div class="scrubber-container">
+                            <label for="scrubberRange">Zaman İlerlemesi:</label>
+                            <input type="range" id="scrubberRange" min="0" max="10" step="0.05" value="0">
+                            <span id="scrubberVal">0.00 s</span>
+                        </div>
+                    </div>
+
+                    <div class="graphs-grid">
+                        <!-- x-t Canvas -->
+                        <div class="graph-wrapper">
+                            <div class="graph-title">
+                                <span class="graph-tag tag-x">x-t</span> Konum - Zaman Grafiği
+                            </div>
+                            <canvas id="xtCanvas" width="400" height="220"></canvas>
+                        </div>
+
+                        <!-- v-t Canvas -->
+                        <div class="graph-wrapper">
+                            <div class="graph-title">
+                                <span class="graph-tag tag-v">v-t</span> Hız - Zaman Grafiği
+                            </div>
+                            <canvas id="vtCanvas" width="400" height="220"></canvas>
+                        </div>
+
+                        <!-- a-t Canvas -->
+                        <div class="graph-wrapper">
+                            <div class="graph-title">
+                                <span class="graph-tag tag-a">a-t</span> İvme - Zaman Grafiği
+                            </div>
+                            <canvas id="atCanvas" width="400" height="220"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Educational Info Box -->
+                <div class="card info-card">
+                    <div class="card-header">
+                        <h2>📚 Fizik Kuralları & Ders Notları</h2>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-box">
+                            <h4>Hızlanan Hareket</h4>
+                            <p>Hız ($\vec{v}$) ve İvme ($\vec{a}$) vektörleri aynı yönlüdür ($v \cdot a > 0$). Cisim pozitif veya negatif yönde hızlanabilir.</p>
+                        </div>
+                        <div class="info-box">
+                            <h4>Yavaşlayan Hareket</h4>
+                            <p>Hız ($\vec{v}$) ve İvme ($\vec{a}$) vektörleri zıt yönlüdür ($v \cdot a < 0$). Cisim durana kadar yavaşlar.</p>
+                        </div>
+                        <div class="info-box">
+                            <h4>Yön Değiştirme</h4>
+                            <p>Hız sıfırlandığı an ($v = 0$) cisim durur ve ivme devam ediyorsa ters yönde harekete başlar. $x-t$ grafiğinde bu nokta tepe/dip noktasıdır.</p>
+                        </div>
+                        <div class="info-box">
+                            <h4>Grafik Alanları</h4>
+                            <p>$v-t$ grafiğinin altındaki alan <strong>Yer Değiştirmeyi ($\Delta x$)</strong>, $a-t$ grafiğinin altındaki alan ise <strong>Hız Değişimini ($\Delta v$)</strong> verir.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+
+        <footer class="main-footer">
+            <p>Sabit İvmeli Hareket Simülasyonu • Lise Fizik Eğitim Portalı • MEB Müfredatına Uygun</p>
+        </footer>
+    </div>
+
+    <!-- Application Script -->
+    <script src="app.js"></script>
+</body>
+</html>
